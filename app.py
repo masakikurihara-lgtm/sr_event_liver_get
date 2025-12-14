@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 from ftplib import FTP
-from io import StringIO, BytesIO # BytesIOを追加
+from io import StringIO, BytesIO
 import re
 import time
 
@@ -110,12 +110,10 @@ def upload_ftp_file(ftp, df, remote_path):
         csv_string = df.to_csv(index=False, header=False, encoding='utf-8')
         
         # 2. 文字列をバイトデータにエンコードし、BytesIOバッファに格納
-        # これで 'a bytes-like object' の要件を満たします。
         byte_buffer = BytesIO(csv_string.encode('utf-8'))
         byte_buffer.seek(0)
         
         # 3. FTPにアップロード (storbinaryを使用 - バイトデータ用)
-        # バイナリモード ('I') で転送することで、確実なアップロードを目指します。
         ftp.storbinary(f'STOR {remote_path}', byte_buffer) 
         st.success("✅ CSVファイルが正常にFTPサーバーにアップロードされました。")
         st.caption(f"アップロード先: {ftp.host}:{remote_path}")
@@ -212,6 +210,9 @@ def main():
                 
                 # 3. 作業用列を削除し、最終的なCSV形式に整える
                 final_df = final_df[['room_id', 'event_id']]
+                
+                # 💡 ルームIDの昇順にソートする
+                final_df = final_df.sort_values(by='room_id', ascending=True)
 
                 st.subheader("📊 最終的なアップロードデータ（重複排除後）")
                 st.dataframe(final_df)
