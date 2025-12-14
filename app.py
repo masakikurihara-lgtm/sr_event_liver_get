@@ -112,8 +112,8 @@ def upload_ftp_file(ftp, df, remote_path):
         csv_buffer.seek(0)
         
         # FTPにアップロード (STORLINESを使用 - テキストファイル用)
-        # StringIOは文字列を扱うため、storlinesに修正します
-        ftp.storlines(f'STOR {remote_path}', csv_buffer)
+        # StringIOは文字列を扱うため、storlinesを使用します
+        ftp.storlines(f'STOR {remote_path}', csv_buffer) 
         st.success("✅ CSVファイルが正常にFTPサーバーにアップロードされました。")
         st.caption(f"アップロード先: {ftp.host}:{remote_path}")
 
