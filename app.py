@@ -104,7 +104,7 @@ def download_ftp_file(ftp, remote_path):
 # --- 関数: DataFrameをFTPにアップロード ---
 def upload_ftp_file(ftp, df, remote_path):
     """DataFrameをCSV形式でFTPサーバーにアップロードします。（バイトデータとして転送）"""
-    st.info(f"処理結果をFTPサーバーの **{remote_path}** にアップロードしています...")
+    st.info(f"処理結果を FTPサーバーの **{remote_path}** にアップロードしています...")
     try:
         # 1. DataFrameをCSV文字列に変換（ヘッダーなし、インデックスなし）
         csv_string = df.to_csv(index=False, header=False, encoding='utf-8')
@@ -115,7 +115,7 @@ def upload_ftp_file(ftp, df, remote_path):
         
         # 3. FTPにアップロード (storbinaryを使用 - バイトデータ用)
         ftp.storbinary(f'STOR {remote_path}', byte_buffer) 
-        st.success("✅ CSVファイルが正常にFTPサーバーにアップロードされました。")
+        st.success("✅ CSVファイルが正常に FTPサーバーにアップロードされました。")
         st.caption(f"アップロード先: {ftp.host}:{remote_path}")
 
     except Exception as e:
@@ -211,8 +211,10 @@ def main():
                 # 3. 作業用列を削除し、最終的なCSV形式に整える
                 final_df = final_df[['room_id', 'event_id']]
                 
-                # 💡 ルームIDの昇順にソートする
-                final_df = final_df.sort_values(by='room_id', ascending=True)
+                # 💡 修正箇所: room_idを数値に変換してからソートする
+                final_df['room_id_num'] = pd.to_numeric(final_df['room_id'], errors='coerce')
+                final_df = final_df.sort_values(by='room_id_num', ascending=True)
+                final_df = final_df.drop(columns=['room_id_num']) # 作業用列を削除
 
                 st.subheader("📊 最終的なアップロードデータ（重複排除後）")
                 st.dataframe(final_df)
