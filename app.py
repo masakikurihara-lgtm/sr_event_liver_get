@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 from ftplib import FTP
-from io import StringIO
+from io import StringIO, BytesIO # BytesIOを追加
 import re
 import time
 
@@ -103,17 +103,20 @@ def download_ftp_file(ftp, remote_path):
 
 # --- 関数: DataFrameをFTPにアップロード ---
 def upload_ftp_file(ftp, df, remote_path):
-    """DataFrameをCSV形式でFTPサーバーにアップロードします。"""
+    """DataFrameをCSV形式でFTPサーバーにアップロードします。（バイトデータとして転送）"""
     st.info(f"処理結果をFTPサーバーの **{remote_path}** にアップロードしています...")
     try:
-        # DataFrameをCSV文字列に変換（ヘッダーなし、インデックスなし）
-        csv_buffer = StringIO()
-        df.to_csv(csv_buffer, index=False, header=False, encoding='utf-8')
-        csv_buffer.seek(0)
+        # 1. DataFrameをCSV文字列に変換（ヘッダーなし、インデックスなし）
+        csv_string = df.to_csv(index=False, header=False, encoding='utf-8')
         
-        # FTPにアップロード (STORLINESを使用 - テキストファイル用)
-        # StringIOは文字列を扱うため、storlinesを使用します
-        ftp.storlines(f'STOR {remote_path}', csv_buffer) 
+        # 2. 文字列をバイトデータにエンコードし、BytesIOバッファに格納
+        # これで 'a bytes-like object' の要件を満たします。
+        byte_buffer = BytesIO(csv_string.encode('utf-8'))
+        byte_buffer.seek(0)
+        
+        # 3. FTPにアップロード (storbinaryを使用 - バイトデータ用)
+        # バイナリモード ('I') で転送することで、確実なアップロードを目指します。
+        ftp.storbinary(f'STOR {remote_path}', byte_buffer) 
         st.success("✅ CSVファイルが正常にFTPサーバーにアップロードされました。")
         st.caption(f"アップロード先: {ftp.host}:{remote_path}")
 
