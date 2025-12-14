@@ -11,7 +11,7 @@ import time
 # APIのエンドポイント
 API_URL = "https://www.showroom-live.com/api/event/room_list"
 # FTPアップロード先のファイル名とパス
-FTP_FILE_PATH = "/showroom/file/event_liver_list.csv"
+FTP_FILE_PATH = "/mksoul-pro.com/showroom/file/event_liver_list.csv"
 
 # --- 関数: APIから全ページデータを取得 ---
 @st.cache_data(show_spinner="イベント参加ルーム情報を取得中...")
